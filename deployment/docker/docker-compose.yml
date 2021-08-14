@@ -1,0 +1,97 @@
+---
+version: '3.6'
+
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-log:
+    driver: local
+  kafka-data:
+    driver: local
+    
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data:Z
+      - zookeeper-log:/var/lib/zookeeper/log:Z
+    environment:
+      ZOOKEEPER_CLIENT_PORT: '2181'
+      ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
+
+  kafka:
+    image: confluentinc/cp-kafka
+    volumes:
+      - kafka-data:/var/lib/kafka/data:Z
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: '0'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_NUM_PARTITIONS: '12'
+      KAFKA_COMPRESSION_TYPE: 'gzip'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:9092'
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+      KAFKA_JMX_PORT: '9091'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_AUTHORIZER_CLASS_NAME: 'kafka.security.auth.SimpleAclAuthorizer'
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: 'true'
+    links:
+      - zookeeper
+
+  akhq:
+    image: tchiotludo/akhq
+    container_name: akhq
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+    ports:
+      - 8050:8080
+    links:
+      - kafka
+
+  pockafka-mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: pockafka-mysql
+    environment:
+      MYSQL_DATABASE: db_pockafka
+      MYSQL_USER: pockafka-user
+      MYSQL_PASSWORD: 5x7jG9M_/.gh956
+      MYSQL_ROOT_PASSWORD: 5x7jG9M_/.gh956
+      MYSQL_TCP_PORT: 3310
+    ports:
+      - "3310:3310"
+    expose:
+      - 3310
+    
+  pockafka-spring:
+    depends_on:
+      - pockafka-mysql
+      - kafka
+    image: pockafka-spring
+    build:
+      context: ../../src
+      dockerfile: ./Dockerfile
+      args:
+        JAVA_OPTS: -Xms128M
+    ports:
+      - "8062:8062"
+  
+  mailslurper:
+    image: marcopas/docker-mailslurper
+    restart: always
+    container_name: mailslurper
+    ports:
+      - 2500:2500
+      - 8010:8010
+      - 8015:8015
+    volumes:
+      - ./mailslurper-config.json:/opt/mailslurper/config.json
