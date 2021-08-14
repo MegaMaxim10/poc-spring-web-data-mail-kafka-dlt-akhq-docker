@@ -5,6 +5,8 @@ import com.dimsoft.pockafka.repository.MailRepository;
 import com.dimsoft.pockafka.services.MailService;
 import com.dimsoft.pockafka.utils.Topics;
 
+import java.lang.Exception;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,12 @@ public class KafkaMailProcessor {
 	public void mailListener(Mail mail) {
 		LOG.info("Kafka mail listener [{}]", mail);
         LOG.info("Spring will now try to send the email [{}]", mail);
-        mailService.sendSimpleMail(mail);
+		try {
+			mailService.sendSimpleMail(mail);
+		} catch(Exception e) {
+			LOG.info("An exception was caught [{}]", e);
+			e.printStackTrace();
+		}
         LOG.info("Spring will now try to update the previous email status to 1");
         mail.setMailStatus((short)1);
         mailRepository.save(mail);
