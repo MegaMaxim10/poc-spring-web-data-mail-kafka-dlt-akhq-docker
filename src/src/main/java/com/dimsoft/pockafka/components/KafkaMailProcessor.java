@@ -40,8 +40,9 @@ public class KafkaMailProcessor {
 		try {
 			mailService.sendSimpleMail(mail);
 		} catch(Exception e) {
-			LOG.info("An exception was caught [{}]", e);
+			LOG.info("An exception was caught");
 			e.printStackTrace();
+			throw new Exception(e);
 		}
         LOG.info("Spring will now try to update the previous email status to 1");
         mail.setMailStatus((short)1);
