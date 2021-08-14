@@ -5,8 +5,8 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper
     volumes:
-      - /home/nmaxime/pocs/zookeeper/data:/var/lib/zookeeper/data
-      - /home/nmaxime/pocs/zookeeper/log:/var/lib/zookeeper/log
+      - /home/nmaxime/pocs/data/zookeeper/data:/var/lib/zookeeper/data
+      - /home/nmaxime/pocs/data/zookeeper/log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: '2181'
       ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
@@ -16,7 +16,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka
     volumes:
-      - /home/nmaxime/pocs/kafka/data:/var/lib/kafka/data
+      - /home/nmaxime/pocs/data/kafka/data:/var/lib/kafka/data
     depends_on:
       - zookeeper
     environment:
