@@ -5,8 +5,8 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper
     volumes:
-      - /var/lib/zookeeper/data:/var/lib/zookeeper/data
-      - /var/lib/zookeeper/log:/var/lib/zookeeper/log
+      - ~/docker/zookeeper/data:/var/lib/zookeeper/data
+      - ~/docker/zookeeper/log:/var/lib/zookeeper/log
     environment:
       ZOOKEEPER_CLIENT_PORT: '2181'
       ZOOKEEPER_ADMIN_ENABLE_SERVER: 'false'
@@ -16,7 +16,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka
     volumes:
-      - /var/lib/kafka/data:/var/lib/kafka/data
+      - ~/docker/kafka/data:/var/lib/kafka/data
     depends_on:
       - zookeeper
     environment:
